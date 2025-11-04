@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>All Tickets</h2>
+  <table class="tickets-table">
+    <tr>
+      <th>ID</th><th>Timestamp</th><th>From</th><th>Subject</th><th>Status</th>
+    </tr>
+    {% for t in tickets %}
+    <tr>
+      <td>{{ t.id or 'N/A' }}</td>
+      <td>{{ t.timestamp or 'N/A' }}</td>
+      <td>{{ t.from or 'N/A' }}</td>
+      <td>{{ t.subject or 'N/A' }}</td>
+      <td>{{ t.status or 'N/A' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

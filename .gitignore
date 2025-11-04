@@ -1,0 +1,70 @@
+# =====================================
+# 🐍 Python Cache & Build Files
+# =====================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# =====================================
+# 🧱 Virtual Environments
+# =====================================
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+
+# =====================================
+# 🔐 Secrets & Environment Variables
+# =====================================
+.env
+.env.*
+*.key
+*.pem
+*.crt
+*.der
+*.csr
+*.p12
+*.json
+
+# Ignore credential folders and service accounts
+credentials/
+google_service_account.json
+service_account.json
+token.json
+
+# =====================================
+# 🪵 Logs
+# =====================================
+*.log
+*.out
+automation.log
+auto_ticket_log.txt
+
+# =====================================
+# 🧰 IDE / OS Files
+# =====================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =====================================
+# 🧾 Documents & Reports (Optional)
+# =====================================
+*.docx
+*.pdf
+*.xlsx
+*.csv
+*.pptx
+
+# =====================================
+# 🚀 Deployment
+# =====================================
+# Render / Heroku
+instance/

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Ticket Volume Analysis</h2>
+  <canvas id="ticketChart" width="600" height="300"></canvas>
+
+  <script>
+    fetch("/api/ticket_stats")
+      .then(res => res.json())
+      .then(data => {
+        const labels = data.map(d => d[0]);
+        const counts = data.map(d => d[1]);
+        new Chart(document.getElementById("ticketChart"), {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [{
+              label: "Tickets per Day",
+              data: counts,
+              backgroundColor: "rgba(54, 162, 235, 0.6)"
+            }]
+          },
+          options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+      });
+  </script>
+{% endblock %}

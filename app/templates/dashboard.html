@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Auto Ticketing System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8fafc;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2563eb;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+    nav a {
+      color: white;
+      margin-left: 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    main {
+      margin-top: 30px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #e0e7ff;
+    }
+    .refresh-info {
+      font-size: 14px;
+      color: #555;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Auto Ticketing System - Dashboard</h1>
+    <nav>
+      <a href="/home">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/tickets">Tickets</a>
+      <a href="/logs">Logs</a>
+      <a href="/analysis">Analysis</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Ticket Summary</h2>
+      <p>Real-time overview of your tickets from Google Sheets.</p>
+
+      <table id="ticket-summary">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Total</th>
+            <th>Open</th>
+            <th>Closed</th>
+            <th>Pending</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="5">Loading data...</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="refresh-info">Auto-refreshing every 10 seconds.</p>
+    </div>
+  </main>
+
+  <!-- === Live Dashboard Refresh Script === -->
+  <script>
+  async function loadDashboardData() {
+      try {
+          const res = await fetch("/api/dashboard");
+          const data = await res.json();
+
+          const tbody = document.querySelector("#ticket-summary tbody");
+          tbody.innerHTML = "";
+
+          if (data.summary && data.summary.length > 0) {
+              data.summary.forEach(row => {
+                  const tr = document.createElement("tr");
+                  tr.innerHTML = `
+                      <td>${row.category}</td>
+                      <td>${row.total}</td>
+                      <td>${row.open}</td>
+                      <td>${row.closed}</td>
+                      <td>${row.pending}</td>
+                  `;
+                  tbody.appendChild(tr);
+              });
+          } else {
+              tbody.innerHTML = `<tr><td colspan="5">No data available</td></tr>`;
+          }
+      } catch (err) {
+          console.error("Error fetching dashboard data:", err);
+      }
+  }
+
+  // Refresh every 10 seconds
+  setInterval(loadDashboardData, 10000);
+  loadDashboardData();
+  </script>
+
+</body>
+</html>

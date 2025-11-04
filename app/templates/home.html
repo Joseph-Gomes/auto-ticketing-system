@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Ticketing System - Home</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8fafc;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2563eb;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+    nav a {
+      color: white;
+      margin-left: 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    main {
+      margin-top: 30px;
+    }
+    .status {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .btn {
+      padding: 10px 18px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+    }
+    .start { background-color: #16a34a; }
+    .stop { background-color: #dc2626; }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Auto Ticketing System</h1>
+    <nav>
+      <a href="/home">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/tickets">Tickets</a>
+      <a href="/logs">Logs</a>
+      <a href="/analysis">Analysis</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Welcome to Auto Ticketing System</h2>
+      <p>Automate email → ticket workflow. Control from here.</p>
+
+      <p class="status">
+        Status: <span id="status-text">{{ status }}</span>
+      </p>
+
+      <button onclick="controlBot('start')" class="btn start">Start</button>
+      <button onclick="controlBot('stop')" class="btn stop">Stop</button>
+
+      <h3>Quick Info</h3>
+      <p>Use <b>Start</b> to begin monitoring. Use <b>Stop</b> to pause the bot.</p>
+      <p>Logs and analytics available in the top menu.</p>
+    </div>
+  </main>
+
+  <!-- === Live Status + Instant Button Control === -->
+  <script>
+  // Fetch current status and update text
+  async function refreshStatus() {
+      try {
+          const res = await fetch("/api/status");
+          const data = await res.json();
+          document.getElementById("status-text").innerText = data.status;
+      } catch (err) {
+          console.error("Error updating status:", err);
+      }
+  }
+
+  // Start or stop bot instantly without reloading
+  async function controlBot(action) {
+      try {
+          await fetch(`/${action}`);
+          await refreshStatus(); // update immediately
+      } catch (err) {
+          console.error("Error controlling bot:", err);
+      }
+  }
+
+  // Periodically refresh status every 3 seconds
+  setInterval(refreshStatus, 3000);
+  refreshStatus(); // run once at load
+  </script>
+
+</body>
+</html>

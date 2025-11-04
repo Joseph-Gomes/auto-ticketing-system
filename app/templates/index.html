@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Welcome to Auto Ticketing System</h2>
+  <p class="lead">Automate email → ticket workflow and monitor daily performance.</p>
+
+  <h3>Status: {{ status }}</h3>
+  <div>
+      <a href="{{ url_for('main.start') }}" class="btn start">Start</a>
+      <a href="{{ url_for('main.stop') }}" class="btn stop">Stop</a>
+  </div>
+
+  <hr>
+  <h3>📊 Today's Ticket Summary</h3>
+  <p>Total Tickets: <strong>{{ summary.total }}</strong></p>
+  <p>Open: <strong>{{ summary.open }}</strong> | Closed: <strong>{{ summary.closed }}</strong></p>
+{% endblock %}
