@@ -7,14 +7,15 @@ import os
 import time
 import logging
 import sys
+import re
 from ticket_manager import add_ticket
-from email_sender import send_auto_reply  # NEW IMPORT
+from email_sender import send_auto_reply  # Send confirmation email
 
 # Load environment variables
 load_dotenv()
 
 # --- Logging Configuration ---
-LOG_FILE = "automation.log"  # ✅ renamed for dashboard compatibility
+LOG_FILE = "automation.log"
 
 logging.basicConfig(
     filename=LOG_FILE,
@@ -31,6 +32,45 @@ console.setFormatter(formatter)
 logging.getLogger().addHandler(console)
 
 
+# -------------------------------
+# ✉️ Helper: Decode MIME & Extract Sender
+# -------------------------------
+def decode_mime_words(header_value):
+    """Decode MIME-encoded email headers (e.g., =?UTF-8?...)."""
+    if not header_value:
+        return ""
+    decoded_parts = decode_header(header_value)
+    return ''.join(
+        part.decode(charset or 'utf-8') if isinstance(part, bytes) else part
+        for part, charset in decoded_parts
+    )
+
+
+def extract_sender(from_header):
+    """
+    Extract sender in 'Name (email@example.com)' format.
+    Handles:
+    - John Doe <email@example.com>
+    - email@example.com
+    """
+    if not from_header:
+        return "Unknown"
+
+    match = re.match(r'(.*)<(.+@.+)>', from_header)
+    if match:
+        name = match.group(1).strip().strip('"')
+        email_addr = match.group(2).strip()
+        if name:
+            return f"{name} ({email_addr})"
+        else:
+            return email_addr
+    else:
+        return from_header.strip()
+
+
+# -------------------------------
+# 📥 Connect to Gmail
+# -------------------------------
 def connect_to_mailbox():
     """Connect to Gmail via IMAP using credentials from .env"""
     logging.info("Connecting to Gmail IMAP server...")
@@ -45,6 +85,9 @@ def connect_to_mailbox():
         return None
 
 
+# -------------------------------
+# 📧 Process Inbox
+# -------------------------------
 def check_inbox(mail):
     """Check inbox for unread emails, create tickets, and send confirmation replies."""
     status, messages = mail.search(None, "UNSEEN")
@@ -59,39 +102,39 @@ def check_inbox(mail):
         _, msg_data = mail.fetch(e_id, "(RFC822)")
         msg = email.message_from_bytes(msg_data[0][1])
 
-        # Decode subject
-        subject, encoding = decode_header(msg["Subject"])[0]
-        if isinstance(subject, bytes):
-            subject = subject.decode(encoding or "utf-8")
+        # Decode subject safely
+        subject = decode_mime_words(msg["Subject"])
+        raw_from = decode_mime_words(msg["From"])
+        sender = extract_sender(raw_from)
 
-        sender = msg["From"]
         logging.info(f"Processing Email: {subject} (From: {sender})")
 
         # Prepare ticket data
         ticket_data = {
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "subject": subject,
-            "sender": sender,
+            "from": sender,
             "status": "New",
         }
 
-        # Add to Google Sheet
+        # Add to Google Sheet and send confirmation
         try:
             ticket_id = add_ticket(ticket_data)
-            logging.info(f"Ticket added to sheet: {ticket_id}")
+            logging.info(f"✅ Ticket added to sheet: {ticket_id}")
 
-            # Send auto confirmation email
             send_auto_reply(sender, subject, ticket_id)
-
         except Exception as e:
-            logging.error(f"Failed to process '{subject}': {e}")
+            logging.error(f"❌ Failed to process '{subject}': {e}")
 
-        # Mark email as read
+        # Mark as read
         mail.store(e_id, "+FLAGS", "\\Seen")
 
     logging.info("All unread emails processed.\n")
 
 
+# -------------------------------
+# ⏱ Countdown Timer
+# -------------------------------
 def countdown(seconds):
     """Show live countdown timer in terminal"""
     for remaining in range(seconds, 0, -1):
@@ -102,6 +145,9 @@ def countdown(seconds):
     sys.stdout.flush()
 
 
+# -------------------------------
+# ▶️ Main Loop
+# -------------------------------
 if __name__ == "__main__":
     logging.info("Auto-Ticketing System Started. Monitoring emails...\n")
     try:
