@@ -55,7 +55,6 @@ def send_auto_reply(to_email, subject, ticket_id):
             body = {"raw": raw_message}
 
             service.users().messages().send(userId="me", body=body).execute()
-
             logging.info(f"✅ Auto-reply sent successfully via Gmail API to {to_email} (Ticket ID: {ticket_id})")
             return True
         else:
@@ -75,10 +74,11 @@ def send_auto_reply(to_email, subject, ticket_id):
         msg["Subject"] = f"[Ticket Received] {subject} (ID: {ticket_id})"
         msg["From"] = sender_email
         msg["To"] = to_email
-
         msg.attach(MIMEText(html_content, "html"))
 
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        logging.info("🔐 Connecting to Gmail SMTP...")
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
+            server.set_debuglevel(1)  # Enables detailed SMTP logs
             server.ehlo()
             server.starttls()
             server.ehlo()
@@ -95,5 +95,5 @@ def send_auto_reply(to_email, subject, ticket_id):
         logging.error(f"❌ SMTP Recipients Refused: {e.recipients}")
         return False
     except Exception as e:
-        logging.error(f"❌ Failed to send auto-reply via SMTP: {type(e).__name__}: {e}")
+        logging.error(f"❌ SMTP general error ({type(e).__name__}): {e}")
         return False
