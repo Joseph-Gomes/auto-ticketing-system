@@ -14,25 +14,29 @@ from app import create_app
 def recreate_file_from_env(env_var_name, file_path):
     """Create a file from an environment variable containing JSON if it exists."""
     data = os.getenv(env_var_name)
-    if data and not os.path.exists(file_path):
+    if data:
         try:
+            # If directory doesn’t exist (e.g. src/), create it
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
             with open(file_path, "w") as f:
                 json.dump(json.loads(data), f)
-            print(f"✅ {file_path} created from {env_var_name}.")
+            print(f"✅ {os.path.basename(file_path)} created from {env_var_name}.")
         except Exception as e:
-            print(f"⚠️ Failed to create {file_path}: {e}")
+            print(f"⚠️ Failed to create {os.path.basename(file_path)}: {e}")
 
 
 # -------------------------------------------------------------------
 # 🧠 Rebuild credentials automatically for Render (safe for local too)
 # -------------------------------------------------------------------
 base_dir = os.path.dirname(__file__)
+src_dir = os.path.join(base_dir, "src")
 
-# Google Service Account
-recreate_file_from_env("GOOGLE_SERVICE_JSON", os.path.join(base_dir, "service_account.json"))
+# Google Service Account (for Google Sheets)
+recreate_file_from_env("GOOGLE_SERVICE_JSON", os.path.join(src_dir, "google_service_account.json"))
 
-# Gmail OAuth Token (used for sending confirmation emails)
-recreate_file_from_env("GMAIL_TOKEN_JSON", os.path.join(base_dir, "token.json"))
+# Gmail OAuth Token (optional: for sending confirmation emails)
+recreate_file_from_env("GMAIL_TOKEN_JSON", os.path.join(src_dir, "token.json"))
 
 
 # -------------------------------------------------------------------
