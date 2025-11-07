@@ -17,11 +17,15 @@ class Config:
     # --------------------------
     # 📊 Google Sheets / Service Account
     # --------------------------
-    # Dynamically choose the correct JSON path:
+    # ✅ Works on BOTH Render and Local
     SERVICE_JSON = (
-        "/etc/secrets/google_service_account.json"
+        "/etc/secrets/google_service_account.json"  # Render's secret file
         if os.path.exists("/etc/secrets/google_service_account.json")
-        else os.path.join(os.path.dirname(__file__), "credentials", "google_service_account.json")
+        else os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),  # Go up from src/ to project root
+            "credentials", 
+            "google_service_account.json"
+        )
     )
 
     SHEET_ID = os.getenv("SHEET_ID", "1eYLJZ0fKVfvn0Rg1NEb3cRB7S9c1mi0J35ARiUBQyjw")
