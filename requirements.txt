@@ -10,3 +10,4 @@ requests>=2.0
 oauthlib>=3.0
 Werkzeug>=2.0
 Flask-Login>=0.6
+sendgrid==6.11.0
