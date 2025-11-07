@@ -19,11 +19,11 @@ class Config:
     # --------------------------
     # ✅ Works on BOTH Render and Local
     SERVICE_JSON = (
-        "/etc/secrets/google_service_account.json"  # Render's secret file
+        "/etc/secrets/google_service_account.json"  # Used on Render (via Render Secret)
         if os.path.exists("/etc/secrets/google_service_account.json")
         else os.path.join(
             os.path.dirname(os.path.dirname(__file__)),  # Go up from src/ to project root
-            "credentials", 
+            "credentials",
             "google_service_account.json"
         )
     )
