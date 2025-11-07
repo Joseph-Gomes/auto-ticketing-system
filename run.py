@@ -7,25 +7,36 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from app import create_app
 
-# -------------------------------------------------------------------
-# 🔒 Recreate Google service account file from Render environment
-# -------------------------------------------------------------------
-# On Render, store your service account JSON as an environment variable
-# named GOOGLE_SERVICE_JSON. This will rebuild the actual JSON file
-# before the app starts.
-service_json_env = os.getenv("GOOGLE_SERVICE_JSON")
-service_json_path = os.path.join(os.path.dirname(__file__), "service_account.json")
-
-if service_json_env and not os.path.exists(service_json_path):
-    try:
-        with open(service_json_path, "w") as f:
-            json.dump(json.loads(service_json_env), f)
-        print("✅ Service account JSON created from environment variable.")
-    except Exception as e:
-        print("⚠️ Failed to write service account JSON:", e)
 
 # -------------------------------------------------------------------
-# Create Flask app
+# 🔒 Utility: Recreate JSON files from environment variables
+# -------------------------------------------------------------------
+def recreate_file_from_env(env_var_name, file_path):
+    """Create a file from an environment variable containing JSON if it exists."""
+    data = os.getenv(env_var_name)
+    if data and not os.path.exists(file_path):
+        try:
+            with open(file_path, "w") as f:
+                json.dump(json.loads(data), f)
+            print(f"✅ {file_path} created from {env_var_name}.")
+        except Exception as e:
+            print(f"⚠️ Failed to create {file_path}: {e}")
+
+
+# -------------------------------------------------------------------
+# 🧠 Rebuild credentials automatically for Render (safe for local too)
+# -------------------------------------------------------------------
+base_dir = os.path.dirname(__file__)
+
+# Google Service Account
+recreate_file_from_env("GOOGLE_SERVICE_JSON", os.path.join(base_dir, "service_account.json"))
+
+# Gmail OAuth Token (used for sending confirmation emails)
+recreate_file_from_env("GMAIL_TOKEN_JSON", os.path.join(base_dir, "token.json"))
+
+
+# -------------------------------------------------------------------
+# 🚀 Create Flask app
 # -------------------------------------------------------------------
 app = create_app()
 
