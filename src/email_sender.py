@@ -1,15 +1,16 @@
 import base64
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 import smtplib
-from email.mime.multipart import MIMEMultipart
 from config import Config
 import os
 import logging
 
 # Gmail API scopes for sending emails
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+
 
 def send_auto_reply(to_email, subject, ticket_id):
     """
@@ -61,7 +62,7 @@ def send_auto_reply(to_email, subject, ticket_id):
             logging.warning("⚠️ token.json not found. Falling back to SMTP method...")
 
     except Exception as e:
-        logging.error(f"❌ Gmail API failed ({e}). Falling back to SMTP method...")
+        logging.error(f"❌ Gmail API failed ({type(e).__name__}: {e}). Falling back to SMTP method...")
 
     # =========================
     # 💌 Fallback: Use SMTP
@@ -78,13 +79,21 @@ def send_auto_reply(to_email, subject, ticket_id):
         msg.attach(MIMEText(html_content, "html"))
 
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.ehlo()
             server.starttls()
+            server.ehlo()
             server.login(sender_email, sender_pass)
             server.send_message(msg)
 
         logging.info(f"✅ Auto-reply sent successfully via SMTP to {to_email} (Ticket ID: {ticket_id})")
         return True
 
+    except smtplib.SMTPAuthenticationError as e:
+        logging.error(f"❌ SMTP Auth Error: {e.smtp_error.decode() if hasattr(e, 'smtp_error') else e}")
+        return False
+    except smtplib.SMTPRecipientsRefused as e:
+        logging.error(f"❌ SMTP Recipients Refused: {e.recipients}")
+        return False
     except Exception as e:
-        logging.error(f"❌ Failed to send auto-reply via SMTP: {e}")
+        logging.error(f"❌ Failed to send auto-reply via SMTP: {type(e).__name__}: {e}")
         return False
